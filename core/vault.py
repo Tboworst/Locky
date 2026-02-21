@@ -65,5 +65,17 @@ def paste_files(cfg: Config, filenames: list[str], cwd: Path) -> list[str]:
     
     #return the list of pasted files
     return pasted
-        
-        
+
+
+def remove_files(cfg: Config, meta: MetaStore, filenames: list[str]) -> list[str]:
+    """
+    Delete selected files from the vault directory and metadata store.
+    """
+    removed = []
+    for name in filenames:
+        vault_file = cfg.vault_dir / name
+        if vault_file.exists():
+            vault_file.unlink()  # delete the actual file
+        meta.delete(name)        # remove from the database
+        removed.append(name)
+    return removed

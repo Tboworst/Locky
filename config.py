@@ -10,15 +10,16 @@ class Config:
     vault_dir: Path
     # Path to the SQLite database file for metadata
     db_path: Path
+    # Path to the folder where pasted files are dropped
+    paste_dir: Path
 
 def load_config() -> Config:
     # Get the user's home directory
     home = Path.home()
-    # Determine the vault directory:
-    # If the TEMPVAULT_DIR environment variable is set, use its value.
-    # Otherwise, default to a "tempvault" directory in the user's home.
+    # Determine the vault directory
     vault_dir = Path(os.environ.get("TEMPVAULT_DIR", home / "vault")).expanduser()
-    # The database file will be named "metadata.sqlite3" inside the vault directory
+    # The database file lives inside the vault directory
     db_path = vault_dir / "metadata.sqlite3"
-    # Return a Config object with the determined paths
-    return Config(vault_dir=vault_dir, db_path=db_path)
+    # Files retrieved from the vault are pasted here by default
+    paste_dir = Path(os.environ.get("LOCKY_PASTE_DIR", home / "Locky-files")).expanduser()
+    return Config(vault_dir=vault_dir, db_path=db_path, paste_dir=paste_dir)

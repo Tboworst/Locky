@@ -81,6 +81,11 @@ class MetaStore:
             ).fetchone()
         return row[0] if row else None
 
+    def delete(self, filename: str) -> None:
+        # Remove a file's record from the database
+        with self._connect() as con:
+            con.execute("DELETE FROM files WHERE filename=?", (filename,))
+
     def list_files(self) -> list[str]:
         # Return a list of all filenames in the database, sorted alphabetically
         with self._connect() as con:
