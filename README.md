@@ -91,5 +91,3 @@ locky paste
 - SQLite — lightweight metadata storage
 
 ---
-
-*Built with assistance from [Claude](https://claude.ai) (Anthropic).*
