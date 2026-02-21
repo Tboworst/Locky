@@ -1,6 +1,8 @@
 # Locky
 
-A personal file vault for your terminal. Store files you reach for often, browse them with a fuzzy finder, and paste them anywhere — all from the command line.
+A file vault for your terminal. Add anything, find it instantly, paste it anywhere.
+
+Powered by Claude AI — every file you store gets an automatic description so you always know what's inside without opening it.
 
 > **Work in progress** — core features are working but more is coming (see roadmap below).
 
@@ -52,7 +54,8 @@ source ~/.zshrc
 | `locky add` | Open a file browser and pick a file to add to the vault |
 | `locky add <filepath>` | Add a specific file directly |
 | `locky list` | List all files in the vault with their descriptions |
-| `locky paste` | Browse the vault and paste selected files into your current directory |
+| `locky paste` | Browse the vault and paste selected files into `~/Locky-files` |
+| `locky remove` | Browse the vault and permanently delete selected files |
 
 ---
 
@@ -74,8 +77,8 @@ locky paste
 
 ## Roadmap
 
-- [ ] `locky remove` — delete a file from the vault
-- [ ] `locky search` — search descriptions with a keyword
+- [x] `locky remove` — delete a file from the vault
+- [ ] `locky search` — search descriptions with natural language via Claude
 - [ ] Auto-refresh descriptions on re-add
 - [ ] README demo video
 
