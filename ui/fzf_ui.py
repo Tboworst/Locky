@@ -7,6 +7,30 @@ def check_fzf() -> bool:
     # Check if the 'fzf' fuzzy finder tool is installed and available in PATH
     return shutil.which("fzf") is not None
 
+def pick_file_to_add(start_dir: Path) -> Path | None:
+    # Open an interactive fzf file browser so the user can pick a file to add
+    if not check_fzf():
+        print("Error: fzf is not installed")
+        return None
+
+    cmd = [
+        "fzf",
+        "--walker", "file,dir,follow",   # walk files and directories recursively
+        "--walker-root", str(start_dir), # start browsing from the given directory
+        "--prompt", "Add to vault> ",
+        "--preview", "cat {}",           # show file contents in the preview pane
+        "--preview-window", "right:50%:wrap",
+    ]
+
+    result = subprocess.run(cmd, capture_output=True)
+
+    if result.returncode in (1, 130):
+        return None
+
+    selected = result.stdout.decode().strip()
+    return Path(selected) if selected else None
+
+
 def pick_files(filenames: list[str], db_path: Path, vault_dir: Path) -> list[str]:
     # If fzf is not installed, print an error and return an empty list
     if not check_fzf():
