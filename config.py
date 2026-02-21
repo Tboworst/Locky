@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from __future__ import annotations
+from dataclasses import dataclass
 from pathlib import Path
 # Allows us to interact with the operating system (like reading environment variables)
 import os
@@ -17,7 +17,7 @@ def load_config() -> Config:
     # Determine the vault directory:
     # If the TEMPVAULT_DIR environment variable is set, use its value.
     # Otherwise, default to a "tempvault" directory in the user's home.
-    vault_dir = Path(os.environ.get("TEMPVAULT_DIR", home / "tempvault")).expanduser()
+    vault_dir = Path(os.environ.get("TEMPVAULT_DIR", home / "vault")).expanduser()
     # The database file will be named "metadata.sqlite3" inside the vault directory
     db_path = vault_dir / "metadata.sqlite3"
     # Return a Config object with the determined paths

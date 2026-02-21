@@ -1,16 +1,20 @@
 from __future__ import annotations
 from pathlib import Path
+import os
 
 from core.metadata import MetaStore
-from core.ai_desc import describe_file_baseline
+from core.ai_desc import describe_file_ai, describe_file_baseline
 
-# TODO: Define a function called `describe_and_store` that takes:
-#   - meta: MetaStore  (the metadata store)
-#   - path: Path       (the full path to the file inside the vault)
-#
-# It should:
-#   1. Call describe_file_baseline(path) to generate a short description string
-#   2. Call meta.set_description(path.name, description) to save it
-#   3. Return the description string so the caller can display it
-#
-# Hint: path.name gives you just the filename (e.g. "notes.txt") from a full path
+def describe_and_store(meta: MetaStore, path: Path) -> str:
+    # Check if the ANTHROPIC_API_KEY environment variable is set
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        # If the API key exists, use the AI-powered description
+        description = describe_file_ai(path)
+    else:
+        # If the API key doesn't exist, use the baseline (non-AI) description
+        description = describe_file_baseline(path)   
+
+    # Store the description in the metadata database
+    meta.set_description(path.name, description)
+    # Return the description
+    return description

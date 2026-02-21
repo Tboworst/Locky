@@ -3,27 +3,34 @@ import shutil
 import subprocess
 from pathlib import Path
 
-# TODO: Define a function called `check_fzf` that:
-#   - Returns True if fzf is installed on the system, False otherwise
-#   - Hint: use shutil.which("fzf")
+def check_fzf() -> bool:
+    # Check if the 'fzf' fuzzy finder tool is installed and available in PATH
+    return shutil.which("fzf") is not None
 
+def pick_files(filenames: list[str], db_path: Path, vault_dir: Path) -> list[str]:
+    # If fzf is not installed, print an error and return an empty list
+    if not check_fzf():
+        print("Error: fzf is not installed")
+        return []
 
-# TODO: Define a function called `pick_files` that takes:
-#   - filenames: list[str]   (the list of files currently in the vault)
-#   - db_path: Path          (path to the metadata database, passed to preview.py)
-#   - vault_dir: Path        (path to the vault directory, passed to preview.py)
-#
-# It should:
-#   1. Check that fzf is available — if not, print an error and return an empty list
-#   2. Build the fzf command with these flags:
-#        --multi              so the user can select multiple files with Tab
-#        --preview            to show a live preview pane for the highlighted file
-#                             The preview command should call:
-#                             python -m core.preview <db_path> <vault_dir> {}
-#                             ({} is the fzf placeholder for the currently highlighted item)
-#        --preview-window     your choice of layout (e.g. "right:50%:wrap")
-#   3. Run the fzf command via subprocess, passing the filenames list as stdin
-#      (join filenames with newlines "\n" and encode to bytes)
-#   4. Capture stdout and return the selected filenames as a list of strings
-#      (split stdout by newlines, strip whitespace, filter out empty strings)
-#   5. If the user cancels fzf (return code 130 or 1), return an empty list
+    # Build the command to launch fzf with multi-select and file preview
+    cmd = [
+        "fzf",  # fuzzy finder tool
+        "--multi",  # allow selecting multiple files
+        "--preview", f"python -m core.preview {db_path} {vault_dir} {{}}",  # show file preview using your preview module
+        "--preview-window", "right:50%:wrap",  # preview pane on the right, wrap lines
+    ]
+
+    # Run the fzf command as a subprocess, sending the filenames as input
+    result = subprocess.run(
+        cmd,
+        input="\n".join(filenames).encode(),  # provide the file list as input (one per line)
+        capture_output=True,  # capture the output so we can process it
+    )
+
+    # If fzf was cancelled or interrupted, return an empty list
+    if result.returncode in (1, 130):
+        return []
+
+    # Split the output into lines, strip whitespace, and return the selected filenames
+    return [line.strip() for line in result.stdout.decode().split("\n") if line.strip()]
