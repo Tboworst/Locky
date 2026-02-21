@@ -16,7 +16,7 @@ Locky lets you stash files in a central vault and retrieve them fast. When you a
 
 ## Demo
 
-<!-- Add your video here -->
+https://streamable.com/qx1rjx
 
 ---
 
