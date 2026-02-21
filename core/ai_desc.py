@@ -6,27 +6,46 @@ import os
 import anthropic
 
 def describe_file_baseline(path: Path, max_bytes: int = 16000) -> str:
-    # Get the file extension (without the dot), or "unknown" if none
     ext = path.suffix.lower().lstrip(".") or "unknown"
 
+    # Map common extensions to human-friendly type labels
+    type_labels = {
+        "py": "Python script", "js": "JavaScript file", "ts": "TypeScript file",
+        "html": "HTML file", "css": "CSS stylesheet", "json": "JSON file",
+        "md": "Markdown document", "txt": "Text file", "csv": "CSV data file",
+        "sh": "Shell script", "yaml": "YAML config", "yml": "YAML config",
+        "pdf": "PDF document", "png": "PNG image", "jpg": "JPEG image",
+        "jpeg": "JPEG image", "zip": "ZIP archive", "sql": "SQL file",
+    }
+    label = type_labels.get(ext, f"{ext} file")
+
     try:
-        # Read up to max_bytes from the file as raw bytes
         raw = path.read_bytes()[:max_bytes]
-        # Decode the bytes to text, ignoring any decode errors
         text = raw.decode(errors="ignore")
-        # Go through each line in the decoded text
-        for line in text.splitlines():
-            s = line.strip()  # Remove leading/trailing whitespace
-            if s:
-                s = s[:140]  # Limit the preview to 140 characters
-                # Return a description with the file type and the first non-empty line
-                return f"{ext} file - starts with: {s}"
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+
+        if not lines:
+            return f"{label} — no readable text content"
+
+        # Count meaningful lines to give a sense of file size
+        line_count = len(text.splitlines())
+        size_hint = f"{line_count} lines" if line_count > 1 else "1 line"
+
+        # Use the first non-comment, non-empty line as the content preview
+        preview = None
+        for line in lines:
+            if not line.startswith(("#", "//", "/*", "*", "<!--")):
+                preview = line[:120]
+                break
+        # Fall back to the very first line if everything is comments
+        if not preview:
+            preview = lines[0][:120]
+
+        return f"{label} ({size_hint}) — {preview}"
     except Exception:
-        # If anything goes wrong (e.g., file can't be read), ignore the error
         pass
 
-    # Fallback: if no previewable text was found or an error occurred
-    return f"{ext} file - no previable text"
+    return f"{label} — could not read content"
 
 # Function that will describe the files using AI (Claude API)
 def describe_file_ai(path: Path, max_bytes: int = 16000) -> str:
@@ -43,7 +62,12 @@ def describe_file_ai(path: Path, max_bytes: int = 16000) -> str:
             messages=[
                 {
                     "role": "user",
-                    "content": f"Describe this file in one short sentence:\n\n{content}"
+                    "content": (
+                        f"Describe this file in one sentence. Be specific about what it does or contains "
+                        f"(e.g. 'A Python script that calculates student grades' or "
+                        f"'A CSV file containing sales data with 3 columns'). "
+                        f"File name: {path.name}\n\n{content}"
+                    )
                 }
             ]
         )
