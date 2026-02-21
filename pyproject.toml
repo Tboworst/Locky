@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "locky"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["anthropic"]
+
+[project.scripts]
+locky = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "config"]
+
+[tool.setuptools.packages.find]
+exclude = [".venv*", "tests*"]

@@ -33,7 +33,60 @@ from ui.fzf_ui import pick_files
 #   (no command / unknown command)
 #     - Print a short usage/help message showing the available commands
 #
-# TODO: Define a `main()` function that handles the above logic using if/elif on sys.argv[1]
-# TODO: At the bottom, call main() when this file is run directly
+def main():
+    cfg = load_config()
+    meta = init_vault(cfg)
+
+    if len(sys.argv) < 2:
+        print("Locky — file vault")
+        print("")
+        print("Commands:")
+        print("  locky add <filepath>   Add a file to the vault")
+        print("  locky paste            Pick files from the vault and paste them here")
+        print("  locky list             List all files in the vault")
+        return
+
+    cmd = sys.argv[1]
+
+    if cmd == "add":
+        if len(sys.argv) < 3:
+            print("Usage: locky add <filepath>")
+            return
+        path = Path(sys.argv[2])
+        try:
+            add_file(cfg, meta, path)
+        except FileNotFoundError:
+            print(f"Error: file not found: {path}")
+            return
+        desc = describe_and_store(meta, cfg.vault_dir / path.name)
+        print(f"Added '{path.name}'")
+        print(f"Description: {desc}")
+
+    elif cmd == "paste":
+        files = meta.list_files()
+        if not files:
+            print("Vault is empty.")
+            return
+        selected = pick_files(files, cfg.db_path, cfg.vault_dir)
+        if not selected:
+            print("Nothing selected.")
+            return
+        pasted = paste_files(cfg, selected, Path.cwd())
+        print(f"Pasted {len(pasted)} file(s): {', '.join(pasted)}")
+
+    elif cmd == "list":
+        files = meta.list_files()
+        if not files:
+            print("Vault is empty.")
+            return
+        for name in files:
+            desc = meta.get_description(name) or "no description"
+            print(f"  {name}  —  {desc}")
+
+    else:
+        print(f"Unknown command: '{cmd}'")
+        print("Run 'locky' with no arguments for help.")
 
 
+if __name__ == "__main__":
+    main()
